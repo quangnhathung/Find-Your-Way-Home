@@ -10,7 +10,7 @@ _ASSET_FILES = {
     'wall': 'wall.png',
     'open': 'mark.png',
     'path': 'foot.png',
-    'closed': 'EndOfPath.jpg'
+    'closed': 'EndOfPath.png'
 }
 
 # cache raw images
