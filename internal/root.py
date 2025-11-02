@@ -16,9 +16,14 @@ WIDTH = conf.SCREEN_WIDTH  # kích thước vùng lưới (vuông)
 TOP_UI_HEIGHT = 50
 BOTTOM_UI_HEIGHT = 50
 TOTAL_RIGHT_PANEL = 350   # panel bên phải (không vẽ lưới vào đây)
-WIN_HEIGHT = WIDTH + TOP_UI_HEIGHT + BOTTOM_UI_HEIGHT
+WIN_HEIGHT = WIDTH + TOP_UI_HEIGHT + BOTTOM_UI_HEIGHT + 15
 TOTAL_WIDTH = WIDTH + TOTAL_RIGHT_PANEL
 
+try:
+    icon_surf = pygame.image.load('./assets/logo.png')
+    pygame.display.set_icon(icon_surf)
+except Exception as e:
+    print("Không load được icon:", e)
 
 #cònig cho cua so
 WIN = pygame.display.set_mode((TOTAL_WIDTH, WIN_HEIGHT))
@@ -43,9 +48,9 @@ def root(win=WIN, width=WIDTH):
 
     # tham số bố cục
     margin = 20                # khoảng cách trái/phải
-    spacing = 15               # khoảng cách giữa các nút
+    spacing = 15         # khoảng cách giữa các nút
     button_height = 40
-    button_y = TOP_UI_HEIGHT + width + (BOTTOM_UI_HEIGHT - button_height) // 2
+    button_y = TOP_UI_HEIGHT + 10 + width + (BOTTOM_UI_HEIGHT - button_height) // 2
 
     # tính button_width theo công thức: (available_space - gaps) / n
     available = TOTAL_WIDTH - 2 * margin
