@@ -16,8 +16,7 @@ def reconstruct_path(came_from, current, draw):
             current.make_path()
         draw()
 
-# Các hàm tiện ích
-# ---------- Hàm tiện ích ----------
+# Hàm tiện ích
 def h(p1, p2):
     # heuristic Manhattan
     x1, y1 = p1
@@ -43,12 +42,10 @@ def make_grid(rows, width):
 
 def draw_grid_lines(win, rows, width):
     gap = width // rows
-    # vẽ các đường ngang/dọc bao gồm biên ngoài
     for i in range(rows + 1):
         pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
     for j in range(rows + 1):
         pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
-    # vẽ khung ngoài rõ hơn
     pygame.draw.rect(win, GREY, (0, 0, width, width), 2)
 
 def get_clicked_pos(pos, rows, width):

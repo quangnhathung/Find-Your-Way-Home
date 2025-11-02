@@ -17,21 +17,19 @@ def Stochastic(draw, grid, start, end, delay=75):
     print("Stochastic Hill Climbing...")
 
     while True:
-        # xử lý event để có thể đóng cửa sổ
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return False, current_h, current
 
-        # nếu tới đích
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
             return True, current_h, current
 
         # thu thập các neighbor tốt hơn và trọng số cải thiện
-        candidates = []  # list of neighbors
-        weights = []     # corresponding improvements (positive)
+        candidates = [] 
+        weights = []    
 
         for neighbor in current.neighbors:
             if neighbor in path_nodes or neighbor.is_wall():
@@ -39,13 +37,11 @@ def Stochastic(draw, grid, start, end, delay=75):
             neighbor_h = h(neighbor.get_pos(), end.get_pos())
             if neighbor_h < current_h:
                 improvement = current_h - neighbor_h
-                # đảm bảo weight > 0
                 if improvement <= 0:
                     improvement = 1e-6
                 candidates.append(neighbor)
                 weights.append(improvement)
 
-        # nếu không có neighbor tốt hơn -> mắc kẹt
         if not candidates:
             current.make_closed()
             draw()
@@ -67,7 +63,6 @@ def Stochastic(draw, grid, start, end, delay=75):
                     break
                 upto += w
 
-        # cập nhật đường đi
         came_from[best_neighbor] = current
         current = best_neighbor
         path_nodes.add(current)

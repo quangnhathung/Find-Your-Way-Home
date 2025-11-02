@@ -52,7 +52,7 @@ def root(win=WIN, width=WIDTH):
 
     button_colors = [BUTTON] * button_count
 
-    # --- Các hàm vẽ ---
+    # --- hàm vẽ ---
     def update_grid_surf():
         grid_surf.fill(WHITE)
         for row in grid:
@@ -62,14 +62,14 @@ def root(win=WIN, width=WIDTH):
 
     def redraw_all():
         WIN.fill(BG_COLOR)
-        # message phía trên (center trên vùng lưới)
+        # message phía trên
         if message:
             text_surf = FONT.render(message, True, BLACK)
             text_rect = text_surf.get_rect(center=(width // 2, TOP_UI_HEIGHT // 2))
             win.blit(text_surf, text_rect)
-        # vẽ lưới chính (vị trí 0, TOP_UI_HEIGHT)
+        # vẽ lưới chính
         win.blit(grid_surf, (0, TOP_UI_HEIGHT))
-        # panel phải (hiện trắng, bạn có thể vẽ thông tin ở đây)
+        # panel phải
         pygame.draw.rect(win, BG_COLOR, (width, TOP_UI_HEIGHT, TOTAL_RIGHT_PANEL, width))
 
         controls_x = width + 25
@@ -100,7 +100,7 @@ def root(win=WIN, width=WIDTH):
     update_grid_surf()
     redraw_all()
 
-    # ---------- Vòng event ----------
+    # event 
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -112,7 +112,7 @@ def root(win=WIN, width=WIDTH):
             # xử lý nhấp chuột trái
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
-                # click trong vùng lưới (tránh phần panel phải)
+                # click trong vùng lưới
                 if TOP_UI_HEIGHT <= pos[1] < TOP_UI_HEIGHT + width and pos[0] < width:
                     adjusted_pos = (pos[0], pos[1] - TOP_UI_HEIGHT)
                     row, col = get_clicked_pos(adjusted_pos, ROWS, width)
@@ -127,17 +127,17 @@ def root(win=WIN, width=WIDTH):
                         elif node != end and node != start:
                             node.make_wall()
 
-                # click xuống vùng nút (phía dưới)
+                # click xuống vùng nút
                 elif pos[1] >= TOP_UI_HEIGHT + width:
                     for i, rect in enumerate(buttons):
                         if rect.collidepoint(pos):
                             algo_name = button_texts[i]
 
-                            # Random map: không cần start/end
+                            # Random map
                             if algo_name == "Random map":
-                                # tạo lưới mới và set wall ngẫu nhiên
+                                # tạo lưới mới
                                 grid = make_grid(ROWS, width)
-                                density = 0.25  # tỷ lệ tường (tùy chỉnh)
+                                density = conf.DENSITY  # tỷ lệ tường
                                 for r in grid:
                                     for node in r:
                                         if random.random() < density:
@@ -190,7 +190,7 @@ def root(win=WIN, width=WIDTH):
                             started = False
                             break
 
-            # xử lý nhấp chuột phải -> reset node (chỉ vùng lưới)
+            # xử lý nhấp chuột phải
             elif pygame.mouse.get_pressed()[2]:
                 pos = pygame.mouse.get_pos()
                 if TOP_UI_HEIGHT <= pos[1] < TOP_UI_HEIGHT + width and pos[0] < width:

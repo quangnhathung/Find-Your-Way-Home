@@ -5,27 +5,22 @@ from pathlib import Path
 from typing import Optional, Dict, List, Tuple
 
 # --- cấu hình ảnh ---
-# Thêm 'wall_variants' nếu muốn nhiều ảnh wall; giữ cả 'wall' fallback
 _ASSET_FILES: Dict[str, object] = {
     'start': 'character-bg.png',
     'end': 'home.png',
-    # nếu bạn muốn nhiều biến thể cho wall, đặt list các filename ở đây
     'wall_variants': ['grass.png', 'tree.png','rock.jpg',"human-angry.png"],
-    # fallback (nếu bạn chỉ có 1 ảnh wall, đặt tên vào đây)
     'wall': 'wall.png',
     'open': 'mark.png',
     'path': 'foot.png',
     'closed': 'EndOfPath.png'
 }
 
-# cache raw images keyed bằng filename
 _raw_images: Dict[str, Optional[pygame.Surface]] = {}
-# cache scaled images keyed bằng filename rồi size
 _scaled_cache: Dict[str, Dict[int, pygame.Surface]] = {}
 
 
 def assets_dir() -> Path:
-    """Thư mục assets (mặc định: parent của file /assets)."""
+    """Thư mục assets"""
     return Path(__file__).parent.parent / 'assets'
 
 
@@ -44,23 +39,17 @@ def _load_raw_image_file(filename: str) -> Optional[pygame.Surface]:
         _raw_images[filename] = surf
         return surf
     except Exception:
-        # không tìm thấy/ lỗi -> lưu None để tránh thử lại nhiều lần
         _raw_images[filename] = None
         return None
 
 
 def _resolve_filename(key_or_filename: str) -> Optional[str]:
-    """Nếu input là key logic trong _ASSET_FILES, trả về filename.
-    Nếu input không phải key, giả sử đó là filename trực tiếp và trả lại.
-    """
+
     val = _ASSET_FILES.get(key_or_filename)
     if isinstance(val, str):
         return val
     if isinstance(val, list) and val:
-        # trả về phần tử đầu làm mặc định (khi gọi theo key),
-        # biến thể ngẫu nhiên đặt ở Node khi cần
         return val[0]
-    # không có mapping -> giả định đây là filename
     return key_or_filename
 
 
@@ -99,7 +88,6 @@ class Node:
         self.width = width
         self.total_rows = total_rows
         self._is_null = is_null
-        # lưu filename wall đã chọn cho node (nếu là wall)
         self.wall_filename: Optional[str] = None
 
     def get_pos(self) -> Tuple[int, int]:
@@ -173,7 +161,7 @@ class Node:
             pygame.draw.rect(win, GREEN, (self.x, self.y, self.width, self.width))
             return
 
-        # wall (sử dụng wall_filename nếu có, đảm bảo ổn định cho từng node)
+        # wall 
         if self.is_wall():
             key = self.wall_filename or 'wall'
             surf = _get_scaled_image(key, self.width)
@@ -183,7 +171,7 @@ class Node:
             pygame.draw.rect(win, BLACK, (self.x, self.y, self.width, self.width))
             return
 
-        # closed (EndOfPath)
+        # closed
         if self.is_closed():
             surf = _get_scaled_image('closed', self.width)
             if surf:

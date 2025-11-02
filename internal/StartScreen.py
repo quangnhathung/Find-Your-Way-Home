@@ -1,4 +1,3 @@
-# start_screen.py
 import pygame
 from config.utils import hex_to_rgb
 from config.layout import *
@@ -6,8 +5,7 @@ from model.model import *
 
 pygame.font.init()
 
-def fade_out(surface, duration_ms=400, color=(0, 0, 0)):
-    """Hiệu ứng fade out mượt."""
+def fade_out(surface, duration_ms=1000, color=(0, 0, 0)):
     clock = pygame.time.Clock()
     overlay = pygame.Surface((TOTAL_WIDTH, WIN_HEIGHT))
     steps = max(6, duration_ms // 16)
@@ -21,7 +19,6 @@ def fade_out(surface, duration_ms=400, color=(0, 0, 0)):
 
 
 def start_screen():
-    """Hiển thị màn hình bắt đầu."""
     try:
         bg_path = assets_dir() / "logo.png"
         bg_img = pygame.image.load(str(bg_path)).convert_alpha()
@@ -80,11 +77,9 @@ def start_screen():
             pygame.draw.rect(WIN, color, rect, border_radius=14)
             pygame.draw.rect(WIN, (255, 255, 255), rect, 2, border_radius=14)
 
-            # text
             txt = FONT_BTN.render(label, True, TEXT_COLOR)
             WIN.blit(txt, (rect.centerx - txt.get_width() // 2, rect.centery - txt.get_height() // 2))
 
-        # Sự kiện
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -93,7 +88,7 @@ def start_screen():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if start_rect.collidepoint(event.pos):
                     fade_out(WIN, 360)
-                    running = False  # chỉ thoát màn hình start
+                    running = False 
                 elif exit_rect.collidepoint(event.pos):
                     pygame.quit()
                     raise SystemExit

@@ -4,12 +4,11 @@ from config.config import *
 from config.constans import *
 from model.model import *
 
-# ----- Cấu hình chung -----
 conf = Config()
 WIDTH = conf.SCREEN_WIDTH  # kích thước vùng lưới (vuông)
 TOP_UI_HEIGHT = 50
 BOTTOM_UI_HEIGHT = 50
-TOTAL_RIGHT_PANEL = 350   # panel bên phải (không vẽ lưới vào đây)
+TOTAL_RIGHT_PANEL = 350   # panel bên phải
 WIN_HEIGHT = WIDTH + TOP_UI_HEIGHT + BOTTOM_UI_HEIGHT + 15
 TOTAL_WIDTH = WIDTH + TOTAL_RIGHT_PANEL
 

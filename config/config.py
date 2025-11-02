@@ -13,3 +13,4 @@ class Config:
         self.SCREEN_WIDTH = int(os.getenv("SCREEN_WIDTH", 800))
         self.ROW = int(os.getenv("MATRIX", 15))
         self.BG_COLOR = os.getenv("BG_COLOR", "FFFFFF")
+        self.DENSITY = float(os.getenv("DENSITY", 0.8))
