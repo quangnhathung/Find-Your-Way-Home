@@ -67,7 +67,7 @@ def root(win=WIN, width=WIDTH):
         x = start_x + i * (button_width + spacing)
         buttons.append(pygame.Rect(x, button_y, button_width, button_height))
 
-    button_colors = [LIGHT_BLUE] * button_count
+    button_colors = [BUTTON] * button_count
 
     # --- Các hàm vẽ ---
     def update_grid_surf():

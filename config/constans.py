@@ -18,4 +18,5 @@ PURPLE = (128, 0, 128)  # Đường đi (Path)
 ORANGE = (255, 165, 0)  # Đang dò
 GREY = (128, 128, 128)
 LIGHT_BLUE = (173, 216, 230)
+BUTTON = hex_to_rgb("#A7C7E7")
 BG_COLOR = hex_to_rgb(conf.BG_COLOR)
