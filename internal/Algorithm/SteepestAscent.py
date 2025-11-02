@@ -2,7 +2,7 @@ import pygame
 import random
 from config.utils import *
 
-def Steepest_Ascent(draw, grid, start, end, delay=25):
+def Steepest_Ascent(draw, grid, start, end, delay=75):
     came_from = {}
     current = start
     path_nodes = {start}

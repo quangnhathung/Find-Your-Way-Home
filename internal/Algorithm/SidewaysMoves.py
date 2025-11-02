@@ -5,7 +5,7 @@ from config.config import *
 
 conf = Config()
 
-def Sideways(draw, grid, start, end, delay=25 ):
+def Sideways(draw, grid, start, end, delay=75 ):
     """
     Hill Climbing with Sideways Moves:
     - Cho phép di chuyển sang neighbor có cùng heuristic (h = current_h)

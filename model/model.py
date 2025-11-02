@@ -24,7 +24,7 @@ _raw_images: Dict[str, Optional[pygame.Surface]] = {}
 _scaled_cache: Dict[str, Dict[int, pygame.Surface]] = {}
 
 
-def _assets_dir() -> Path:
+def assets_dir() -> Path:
     """Thư mục assets (mặc định: parent của file /assets)."""
     return Path(__file__).parent.parent / 'assets'
 
@@ -34,7 +34,7 @@ def _load_raw_image_file(filename: str) -> Optional[pygame.Surface]:
     if filename in _raw_images:
         return _raw_images[filename]
 
-    path = _assets_dir() / filename
+    path = assets_dir() / filename
     try:
         surf = pygame.image.load(str(path))
         try:
