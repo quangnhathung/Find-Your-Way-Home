@@ -20,7 +20,7 @@ def fade_out(surface, duration_ms=1000, color=(0, 0, 0)):
 
 def start_screen():
     try:
-        bg_path = assets_dir() / "logo.png"
+        bg_path = assets_dir() / "banner.png"
         bg_img = pygame.image.load(str(bg_path)).convert_alpha()
         bg_img = pygame.transform.smoothscale(bg_img, (TOTAL_WIDTH, WIN_HEIGHT))
     except Exception as e:
