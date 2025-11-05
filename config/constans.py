@@ -21,3 +21,11 @@ LIGHT_BLUE = (173, 216, 230)
 BUTTON = hex_to_rgb("#A7C7E7")
 BG_COLOR = hex_to_rgb(conf.BG_COLOR)
 YELLOW = hex_to_rgb("#F0DB18")
+
+#game parameter
+
+MAX_SIDEWAY_MOVE = 10
+SCREEN_WIDTH = 600
+MATRIX = 25
+BG_COLOR= "#F5F2EA"
+DENSITY= 0.25
