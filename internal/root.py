@@ -12,9 +12,11 @@ from config.constans import *
 from config.layout import *
 
 
-
-
 def root(win=WIN, width=WIDTH):
+
+    delay = DELAY
+    max_restart = MAX_RESTART
+
     ROWS = conf.ROW
     grid = make_grid(ROWS, width)
     start = None
@@ -23,26 +25,21 @@ def root(win=WIN, width=WIDTH):
     started = False
     message = ""
 
-    # Surface riêng cho lưới (chỉ vùng lưới)
     grid_surf = pygame.Surface((width, width))
 
-    # --- Các nút điều khiển (trải đều trên TOTAL_WIDTH với gap cố định) ---
-    button_texts = [ "Simple", "Steepest Ascent","Stochastic", "Random Restart", "Random map"]
+    button_texts = ["Simple", "Steepest Ascent", "Stochastic", "Random Restart", "Random map"]
     button_count = len(button_texts)
 
-    # tham số bố cục
-    margin = 20                # khoảng cách trái/phải
-    spacing = 15         # khoảng cách giữa các nút
+    margin = 20
+    spacing = 15
     button_height = 40
     button_y = TOP_UI_HEIGHT + 10 + width + (BOTTOM_UI_HEIGHT - button_height) // 2
 
-    # tính button_width theo công thức: (available_space - gaps) / n
     available = TOTAL_WIDTH - 2 * margin
     button_width = (available - spacing * (button_count - 1)) // button_count
-    if button_width < 60:     # đảm bảo nút không quá nhỏ
+    if button_width < 60:
         button_width = 60
 
-    # tạo rect cho từng nút, trải đều và căn giữa hàng nếu cần
     total_buttons_width = button_count * button_width + (button_count - 1) * spacing
     start_x = margin + max(0, (available - total_buttons_width) // 2)
 
@@ -52,6 +49,28 @@ def root(win=WIN, width=WIDTH):
         buttons.append(pygame.Rect(x, button_y, button_width, button_height))
 
     button_colors = [BUTTON] * button_count
+
+    # --- Input fields trên panel phải ---
+    controls_x = width + 25
+    controls_y = TOP_UI_HEIGHT + 20
+    input_labels = ["Max restart:", "Delay:"]
+    input_texts = ["", ""]
+    input_width = 200
+    input_height = 30
+    input_gap = 12
+    input_rects = []
+    for i in range(len(input_labels)):
+        rx = controls_x + 100
+        ry = controls_y + 100 + i * (input_height + input_gap)
+        input_rects.append(pygame.Rect(rx, ry, input_width, input_height))
+
+    apply_rect = pygame.Rect(
+        controls_x + 80,
+        controls_y + 100 + len(input_labels) * (input_height + input_gap) + 8,
+        100,
+        36,
+    )
+    active_input = None
 
     # --- hàm vẽ ---
     def update_grid_surf():
@@ -68,14 +87,12 @@ def root(win=WIN, width=WIDTH):
             text_surf = FONT.render(message, True, BLACK)
             text_rect = text_surf.get_rect(center=(width // 2, TOP_UI_HEIGHT // 2))
             win.blit(text_surf, text_rect)
+
         # vẽ lưới chính
         win.blit(grid_surf, (0, TOP_UI_HEIGHT))
+
         # panel phải
         pygame.draw.rect(win, BG_COLOR, (width, TOP_UI_HEIGHT, TOTAL_RIGHT_PANEL, width))
-
-        controls_x = width + 25
-        controls_y = TOP_UI_HEIGHT + 20
-        line_spacing = 28
 
         controls_text = [
             "Controls:",
@@ -86,9 +103,32 @@ def root(win=WIN, width=WIDTH):
         for i, line in enumerate(controls_text):
             color = BLACK
             text_surf = FONT.render(line, True, color)
-            win.blit(text_surf, (controls_x, controls_y + i * line_spacing))
+            win.blit(text_surf, (controls_x, controls_y + i * 28))
 
-        # vẽ các nút phía dưới
+        # --- cách ra 1 đoạn rồi thêm tiêu đề Settings ---
+        settings_title_y = controls_y + len(controls_text) * 28 + 40
+        title_surf = FONT.render("Settings:", True, (0, 0, 0))
+        win.blit(title_surf, (controls_x, settings_title_y))
+
+        # --- vẽ label + input ---
+        for i, label in enumerate(input_labels):
+            label_surf = FONT.render(label, True, BLACK)
+            label_y = settings_title_y + 30 + i * (input_height + input_gap)
+            win.blit(label_surf, (controls_x, label_y + 5))
+
+            rect = input_rects[i]
+            rect.y = label_y  # cập nhật vị trí vẽ theo tiêu đề
+            pygame.draw.rect(win, WHITE, rect)
+            border_col = (0, 120, 215) if active_input == i else BLACK
+            pygame.draw.rect(win, border_col, rect, 2)
+            txt_surf = FONT.render(input_texts[i], True, BLACK)
+            win.blit(txt_surf, (rect.x + 6, rect.y + (rect.height - txt_surf.get_height()) // 2))
+
+        # nút Apply
+        apply_rect.y = settings_title_y + 30 + len(input_labels) * (input_height + input_gap) + 8
+        draw_button(win, apply_rect, "Apply", BUTTON)
+
+        # nút thuật toán
         for i, rect in enumerate(buttons):
             draw_button(win, rect, button_texts[i], button_colors[i])
         pygame.display.update()
@@ -101,7 +141,7 @@ def root(win=WIN, width=WIDTH):
     update_grid_surf()
     redraw_all()
 
-    # event 
+    # --- vòng lặp chính ---
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,10 +151,54 @@ def root(win=WIN, width=WIDTH):
             if started:
                 continue
 
-            # xử lý nhấp chuột trái
+            # --- xử lý click input + apply ---
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                pos = event.pos
+                clicked_input = None
+                for i, rect in enumerate(input_rects):
+                    if rect.collidepoint(pos):
+                        clicked_input = i
+                        break
+                if clicked_input is not None:
+                    active_input = clicked_input
+                    continue
+
+                if apply_rect.collidepoint(pos):
+                    try:
+                        v1 = int(input_texts[0].strip())
+                    except ValueError:
+                        v1 = MAX_RESTART  # fallback về constant
+
+                    try:
+                        v2 = int(input_texts[1].strip())
+                    except ValueError:
+                        v2 = DELAY  # fallback về constant
+
+                    max_restart = v1
+                    delay = v2
+                    message = f"Applied: max_restart={max_restart}, delay={delay}"
+                    active_input = None
+                    continue
+
+                active_input = None
+
+            # --- nhập phím vào input ---
+            if event.type == pygame.KEYDOWN and active_input is not None:
+                if event.key == pygame.K_BACKSPACE:
+                    input_texts[active_input] = input_texts[active_input][:-1]
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    if active_input < len(input_texts) - 1:
+                        active_input += 1
+                    else:
+                        active_input = None
+                else:
+                    ch = event.unicode
+                    if ch.isprintable() and len(input_texts[active_input]) < 40:
+                        input_texts[active_input] += ch
+
+            # xử lý nhấp chuột trái trong lưới và nút thuật toán
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
-                # click trong vùng lưới
                 if TOP_UI_HEIGHT <= pos[1] < TOP_UI_HEIGHT + width and pos[0] < width:
                     adjusted_pos = (pos[0], pos[1] - TOP_UI_HEIGHT)
                     row, col = get_clicked_pos(adjusted_pos, ROWS, width)
@@ -128,23 +212,18 @@ def root(win=WIN, width=WIDTH):
                             end.make_end()
                         elif node != end and node != start:
                             node.make_wall()
-
-                # click xuống vùng nút
                 elif pos[1] >= TOP_UI_HEIGHT + width:
                     for i, rect in enumerate(buttons):
                         if rect.collidepoint(pos):
                             algo_name = button_texts[i]
 
-                            # Random map
                             if algo_name == "Random map":
-                                # tạo lưới mới
                                 grid = make_grid(ROWS, width)
-                                density = conf.DENSITY  # tỷ lệ tường
+                                density = conf.DENSITY
                                 for r in grid:
                                     for node in r:
                                         if random.random() < density:
                                             node.make_wall()
-                                # giữ start/end trước đó (nếu có) -> reset chúng trên grid mới
                                 if start:
                                     start = grid[start.row][start.col]
                                     start.make_start()
@@ -156,38 +235,36 @@ def root(win=WIN, width=WIDTH):
                                 redraw_all()
                                 break
 
-                            # Các thuật toán cần start và end
                             if not start or not end:
                                 message = "Vui long dat start va end truoc khi chay thuat toan."
                                 redraw_all()
                                 break
 
-                            # chạy thuật toán
                             started = True
                             message = ""
-                            
                             redraw_all()
+
                             for r in grid:
                                 for node in r:
                                     node.update_neighbors(grid)
 
                             found = False
-                            current_node = Node(-1, -1, 0, 0, is_null=True);
-                            current_heuristic = 0;
+                            current_node = Node(-1, -1, 0, 0, is_null=True)
+                            current_heuristic = 0
 
                             if algo_name == "Stochastic":
-                                found, current_heuristic, current_node, message = Stochastic(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Stochastic(algo_draw, grid, start, end, delay=delay)
                             elif algo_name == "Random Restart":
-                                found, current_heuristic, current_node, message = RandomRestart(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = RandomRestart(algo_draw, grid, start, end, delay=delay, max_restarts=max_restart)
                             elif algo_name == "Simple":
-                                found, current_heuristic, current_node, message = Simple(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Simple(algo_draw, grid, start, end, delay=delay)
                             elif algo_name == "Steepest Ascent":
-                                found, current_heuristic, current_node, message = Steepest_Ascent(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Steepest_Ascent(algo_draw, grid, start, end, delay=delay)
 
                             if not found:
-                                node_x, node_y =  current_node.get_pos();
-                                if message=="":
-                                    message = f"Bi mat ket tai ({node_x +1},{node_y +1}) va heuristic hien tai la {current_heuristic}"
+                                node_x, node_y = current_node.get_pos()
+                                if message == "":
+                                    message = f"Bi mat ket tai ({node_x + 1},{node_y + 1}) va heuristic hien tai la {current_heuristic}"
                             else:
                                 message = f"Da tim thay nha voi {algo_name}!"
                             started = False
@@ -207,7 +284,7 @@ def root(win=WIN, width=WIDTH):
                         elif node == end:
                             end = None
 
-            # bàn phím
+            # bàn phím C để clear
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     start = None
