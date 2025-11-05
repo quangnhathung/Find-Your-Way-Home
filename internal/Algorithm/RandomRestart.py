@@ -5,7 +5,7 @@ from config.constans import *
 from config.utils import *
 
 
-def RandomRestart(draw, grid, start, end, delay=100, max_restarts=30):
+def RandomRestart(draw, grid, start, end, delay=100, max_restarts=100):
     """
     Random Restart Hill Climbing (đơn giản, không kiểm tra chu kỳ, không vẽ lại đường).
     Khi bị kẹt thì đánh dấu flag và restart từ một ô lân cận không phải tường hoặc flag.

@@ -27,7 +27,7 @@ def root(win=WIN, width=WIDTH):
     grid_surf = pygame.Surface((width, width))
 
     # --- Các nút điều khiển (trải đều trên TOTAL_WIDTH với gap cố định) ---
-    button_texts = ["Stochastic", "Sideways", "Simple", "Steepest Ascent", "Random map"]
+    button_texts = ["Stochastic", "Random Restart", "Simple", "Steepest Ascent", "Random map"]
     button_count = len(button_texts)
 
     # tham số bố cục
@@ -176,7 +176,7 @@ def root(win=WIN, width=WIDTH):
 
                             if algo_name == "Stochastic":
                                 found, current_heuristic, current_node = Stochastic(algo_draw, grid, start, end)
-                            elif algo_name == "Sideways":
+                            elif algo_name == "Random Restart":
                                 found, current_heuristic, current_node = RandomRestart(algo_draw, grid, start, end)
                             elif algo_name == "Simple":
                                 found, current_heuristic, current_node = Simple(algo_draw, grid, start, end)
