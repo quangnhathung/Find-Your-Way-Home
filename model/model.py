@@ -8,11 +8,12 @@ from typing import Optional, Dict, List, Tuple
 _ASSET_FILES: Dict[str, object] = {
     'start': 'character-bg.png',
     'end': 'home.png',
-    'wall_variants': ['grass.png', 'tree.png','rock.jpg',"human-angry.png"],
+    'wall_variants': ['grass.png', 'tree.png', 'rock.jpg', 'human-angry.png'],
     'wall': 'wall.png',
     'open': 'mark.png',
     'path': 'foot.png',
-    'closed': 'EndOfPath.png'
+    'closed': 'EndOfPath.png',
+    'flag': 'flag.png'
 }
 
 _raw_images: Dict[str, Optional[pygame.Surface]] = {}
@@ -44,7 +45,6 @@ def _load_raw_image_file(filename: str) -> Optional[pygame.Surface]:
 
 
 def _resolve_filename(key_or_filename: str) -> Optional[str]:
-
     val = _ASSET_FILES.get(key_or_filename)
     if isinstance(val, str):
         return val
@@ -54,9 +54,6 @@ def _resolve_filename(key_or_filename: str) -> Optional[str]:
 
 
 def _get_scaled_image(key_or_filename: str, size: int) -> Optional[pygame.Surface]:
-    """Lấy ảnh đã scale, cache theo filename và size.
-    key_or_filename có thể là key trong _ASSET_FILES hoặc filename trực tiếp.
-    """
     filename = _resolve_filename(key_or_filename)
     if filename is None:
         return None
@@ -93,9 +90,12 @@ class Node:
     def get_pos(self) -> Tuple[int, int]:
         return self.row, self.col
 
-    # trạng thái
+    # --- trạng thái ---
     def is_wall(self) -> bool:
         return self.color == BLACK
+
+    def is_flag(self) -> bool:
+        return self.color == YELLOW # flag có màu vàng
 
     def is_start(self) -> bool:
         return self.color == BLUE
@@ -112,7 +112,7 @@ class Node:
     def is_closed(self) -> bool:
         return self.color == RED
 
-    # thay đổi trạng thái
+    # --- thay đổi trạng thái ---
     def reset(self) -> None:
         self.color = WHITE
         self.wall_filename = None
@@ -128,7 +128,6 @@ class Node:
 
     def make_wall(self) -> None:
         self.color = BLACK
-        # gán 1 filename ngẫu nhiên từ wall_variants nếu có, ngược lại dùng 'wall'
         variants = _ASSET_FILES.get('wall_variants')
         if isinstance(variants, list) and variants:
             self.wall_filename = random.choice(variants)
@@ -141,6 +140,11 @@ class Node:
 
     def make_path(self) -> None:
         self.color = PURPLE
+        self.wall_filename = None
+
+    def make_flag(self) -> None:
+        self.color = YELLOW
+        self.wall_filename = None
 
     def draw(self, win: pygame.Surface) -> None:
         # start
@@ -161,10 +165,19 @@ class Node:
             pygame.draw.rect(win, GREEN, (self.x, self.y, self.width, self.width))
             return
 
-        # wall 
+        # wall
         if self.is_wall():
             key = self.wall_filename or 'wall'
             surf = _get_scaled_image(key, self.width)
+            if surf:
+                win.blit(surf, (self.x, self.y))
+                return
+            pygame.draw.rect(win, BLACK, (self.x, self.y, self.width, self.width))
+            return
+
+        # flag
+        if self.is_flag():
+            surf = _get_scaled_image('flag', self.width)
             if surf:
                 win.blit(surf, (self.x, self.y))
                 return
@@ -197,6 +210,14 @@ class Node:
                 return
             pygame.draw.rect(win, PURPLE, (self.x, self.y, self.width, self.width))
             return
+        
+        if self.is_path():
+            surf = _get_scaled_image('path', self.width)
+            if surf:
+                win.blit(surf, (self.x, self.y))
+                return
+            pygame.draw.rect(win, PURPLE, (self.x, self.y, self.width, self.width))
+            return
 
         # mặc định
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
@@ -216,7 +237,7 @@ class Node:
         if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_wall():
             self.neighbors.append(grid[self.row + 1][self.col])
 
-    def __lt__(self, other: "Node") -> bool:  # required for PriorityQueue 등
+    def __lt__(self, other: "Node") -> bool:
         return False
 
     def __eq__(self, other: object) -> bool:

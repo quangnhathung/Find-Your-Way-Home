@@ -5,6 +5,7 @@ import random
 from .Algorithm.Simple import *
 from .Algorithm.Stochastic import *
 from .Algorithm.SidewaysMoves import *
+from .Algorithm.RandomRestart import *
 from config.config import *
 from model.model import Node
 from config.constans import *
@@ -176,7 +177,7 @@ def root(win=WIN, width=WIDTH):
                             if algo_name == "Stochastic":
                                 found, current_heuristic, current_node = Stochastic(algo_draw, grid, start, end)
                             elif algo_name == "Sideways":
-                                found, current_heuristic, current_node = Sideways(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node = RandomRestart(algo_draw, grid, start, end)
                             elif algo_name == "Simple":
                                 found, current_heuristic, current_node = Simple(algo_draw, grid, start, end)
                             elif algo_name == "Steepest Ascent":
