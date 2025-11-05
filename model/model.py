@@ -8,7 +8,7 @@ from typing import Optional, Dict, List, Tuple
 _ASSET_FILES: Dict[str, object] = {
     'start': 'character-bg.png',
     'end': 'home.png',
-    'wall_variants': ['grass.png', 'tree.png', 'rock.jpg', 'human-angry.png'],
+    'wall_variants': ['grass.png', 'tree.png', 'rock.jpg', 'human-angry.png','hole.png'],
     'wall': 'wall.png',
     'open': 'mark.png',
     'path': 'foot.png',

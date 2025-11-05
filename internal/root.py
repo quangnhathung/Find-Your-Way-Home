@@ -27,7 +27,7 @@ def root(win=WIN, width=WIDTH):
     grid_surf = pygame.Surface((width, width))
 
     # --- Các nút điều khiển (trải đều trên TOTAL_WIDTH với gap cố định) ---
-    button_texts = ["Stochastic", "Random Restart", "Simple", "Steepest Ascent", "Random map"]
+    button_texts = [ "Simple", "Steepest Ascent","Stochastic", "Random Restart", "Random map"]
     button_count = len(button_texts)
 
     # tham số bố cục
@@ -105,7 +105,8 @@ def root(win=WIN, width=WIDTH):
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                pygame.quit()
+                return
 
             if started:
                 continue
