@@ -23,13 +23,30 @@ def h(p1, p2):
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
+# helper: check whether `maybe_ancestor` is in the ancestor chain of `node`
+def is_ancestor(node, maybe_ancestor, came_from) -> bool:
+    """Return True if maybe_ancestor appears in the chain of parents starting from node."""
+    cur = node
+    seen = set()
+    while True:
+        parent = came_from.get(cur, None)
+        if parent is None:
+            return False
+        if parent == maybe_ancestor:
+            return True
+        # cycle guard
+        if parent in seen:
+            return False
+        seen.add(parent)
+        cur = parent
+
 def reconstruct_path(came_from, current, draw):
     """
-    Reconstruct path robustly:
-    - Walk backwards from `current` (usually `end`) following came_from.
-    - If encountering a flag node as a parent, clear its visuals (wall_filename) then set as path.
-    - If encountering a node already marked as path, still call make_path() (re-mark) and continue.
-    - Stop when parent is None, or parent is start, or a cycle is detected.
+    Robust reconstruct: walk backward from `current` (usually end) and mark all parents as path.
+    - If a parent is flagged, clear flag visuals before making path.
+    - If a parent is already path, re-mark it and continue.
+    - Stop when parent is missing or parent is start or a cycle is detected.
     """
     visited = set()
     node = current
@@ -37,31 +54,33 @@ def reconstruct_path(came_from, current, draw):
     while True:
         parent = came_from.get(node, None)
         if parent is None:
-            # no parent -> stop (reached a node without parent; often start)
+            # reached node without a parent -> stop
             break
 
-        # detect cycles
+        # detect cycle
         if parent in visited:
             break
         visited.add(parent)
 
-        # if parent is start, don't paint it as path; just stop after stepping to it
+        # if parent is start, we don't color the start as path; stop after stepping to it
         if parent.is_start():
             break
 
-        # if parent was flagged, remove flag visual so path can be drawn visibly
+        # clear flag visual if necessary so path will be shown
         if parent.is_flag():
-            # clear any image filename that might block path visual
-            if hasattr(parent, "wall_filename"):
+            # prefer a reset() method if available; otherwise clear file & color
+            try:
+                parent.reset()
+            except Exception:
                 try:
                     parent.wall_filename = None
                 except Exception:
                     pass
-        # ensure path visual always overwrites previous state (including earlier path)
+
+        # ensure path always overwrites previous visuals
         try:
             parent.make_path()
         except Exception:
-            # fallback: try setting color directly
             try:
                 parent.color = PURPLE
                 if hasattr(parent, "wall_filename"):
@@ -70,7 +89,8 @@ def reconstruct_path(came_from, current, draw):
                 pass
 
         draw()
-        # continue walking backwards
+
+        # continue walking
         node = parent
 
 

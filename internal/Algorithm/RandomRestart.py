@@ -5,20 +5,14 @@ from config.constans import *
 from config.utils import *
 
 
-def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
+def RandomRestart(draw, grid, start, end, delay=100, max_restarts=30):
     """
-    Robust Random Restart Hill Climbing (4-direction only).
-    - Allow revisiting visited nodes.
-    - Do NOT enter flag or wall nodes.
-    - When stuck: mark current as flag; if current has no parent but prev exists, set came_from[current]=prev.
-    - When choosing new_start, set came_from[new_start] = current (flag) to keep chain.
-    - Always overwrite came_from when moving into a node (so reconstruct reflects latest chain).
-    Returns: (found: bool, final_h: int, current_node)
+    Random Restart Hill Climbing (đơn giản, không kiểm tra chu kỳ, không vẽ lại đường).
+    Khi bị kẹt thì đánh dấu flag và restart từ một ô lân cận không phải tường hoặc flag.
     """
     came_from = {}
     current = start
     prev = None
-    path_nodes = {start}
     current_h = h(start.get_pos(), end.get_pos())
     restarts = 0
 
@@ -27,7 +21,7 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
 
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    print("Random Restart Hill Climbing (robust)...")
+    print("Random Restart Hill Climbing (simple, path-color only)...")
 
     while restarts < max_restarts:
         for event in pygame.event.get():
@@ -36,13 +30,12 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
                 return False, current_h, current
 
         if current == end:
-            reconstruct_path(came_from, end, draw)
             end.make_end()
             return True, current_h, current
 
         x, y = current.get_pos()
 
-        # collect only 4-direction neighbors that are not wall/flag
+        # Thu thập hàng xóm có heuristic nhỏ hơn (không phải tường/flag)
         candidates = []
         weights = []
         for dx, dy in directions:
@@ -53,19 +46,11 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
                     continue
                 neighbor_h = h(neighbor.get_pos(), end.get_pos())
                 if neighbor_h < current_h:
-                    improvement = current_h - neighbor_h
-                    if improvement <= 0:
-                        improvement = 1e-6
                     candidates.append(neighbor)
-                    weights.append(improvement)
+                    weights.append(max(1e-6, current_h - neighbor_h))
 
-        # stuck -> mark flag and restart from one of 4 neighbors (non-wall, non-flag)
+        # Nếu bị kẹt → đánh dấu flag và restart
         if not candidates:
-            # if current has no parent in came_from but we have prev, link it to avoid breaking chain
-            if current not in came_from and prev is not None:
-                came_from[current] = prev
-
-            # mark current as flag (visual) so algorithm won't revisit it
             current.make_flag()
             draw()
             pygame.time.wait(delay)
@@ -76,7 +61,6 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < rows and 0 <= ny < cols:
                     node = grid[nx][ny]
-                    # allow revisit visited nodes, but disallow wall/flag
                     if not node.is_wall() and not node.is_flag():
                         nearby_nodes.append(node)
 
@@ -85,20 +69,13 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
                 return False, current_h, current
 
             new_start = random.choice(nearby_nodes)
-            # connect new_start back to current(flag) so chain remains continuous
-            came_from[new_start] = current
-
-            # update traversal pointers
-            prev = current
             current = new_start
-            path_nodes.add(current)
             current_h = h(current.get_pos(), end.get_pos())
-            current.make_open()
-
+            current.make_path()
             pygame.time.wait(delay)
             continue
 
-        # weighted random pick among candidates
+        # Chọn ngẫu nhiên có trọng số trong candidates
         total = sum(weights)
         r = random.random() * total
         upto = 0
@@ -109,18 +86,13 @@ def RandomRestart(draw, grid, start, end, delay=400, max_restarts=30):
                 break
             upto += w
 
-        # always overwrite came_from for chosen (ensures chain is up-to-date),
-        # even if chosen was visited before
-        came_from[chosen] = current
-
-        # step forward
+        # Bước tới ô mới
         prev = current
         current = chosen
-        path_nodes.add(current)
         current_h = h(current.get_pos(), end.get_pos())
 
         if current != end:
-            current.make_open()
+            current.make_path()
 
         draw()
         pygame.time.wait(delay)
