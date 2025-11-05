@@ -5,7 +5,7 @@ from config.constans import *
 from config.utils import *
 
 
-def RandomRestart(draw, grid, start, end, delay=100, max_restarts=10):
+def RandomRestart(draw, grid, start, end, delay=DELAY, max_restarts=MAX_RESTART):
     """
     Random Restart Hill Climbing (đơn giản, không kiểm tra chu kỳ, không vẽ lại đường).
     Khi bị kẹt thì đánh dấu flag và restart từ một ô lân cận không phải tường hoặc flag.
@@ -23,7 +23,7 @@ def RandomRestart(draw, grid, start, end, delay=100, max_restarts=10):
 
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    print("Random Restart Hill Climbing (simple, path-color only)...")
+    print("Random Restart Hill Climbing...")
 
     while restarts < max_restarts:
         for event in pygame.event.get():

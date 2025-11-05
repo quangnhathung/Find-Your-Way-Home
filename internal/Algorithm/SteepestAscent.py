@@ -2,7 +2,8 @@ import pygame
 import random
 from config.utils import *
 
-def Steepest_Ascent(draw, grid, start, end, delay=75):
+def Steepest_Ascent(draw, grid, start, end, delay=DELAY):
+    ClearOldPath(grid)
     message = ""
     came_from = {}
     current = start

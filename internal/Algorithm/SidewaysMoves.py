@@ -5,13 +5,14 @@ from config.config import *
 
 conf = Config()
 
-def Sideways(draw, grid, start, end, delay=75 ):
+def Sideways(draw, grid, start, end, delay=DELAY ):
     """
     Hill Climbing with Sideways Moves:
     - Cho phép di chuyển sang neighbor có cùng heuristic (h = current_h)
       nhưng tối đa `max_sideways_moves` lần liên tiếp.
     - Nếu không có neighbor tốt hơn hoặc hết số lần sideways -> dừng.
     """
+    ClearOldPath(grid)
     came_from = {}
     current = start
     path_nodes = {start}

@@ -1,12 +1,13 @@
 import pygame
 from config.utils import *
 
-def Simple(draw, grid, start, end, delay=75):
+def Simple(draw, grid, start, end, delay=DELAY):
     """
     Simple Hill Climbing:
     - Chọn neighbor đầu tiên có h(neighbor, end) < h(current, end)
     - Trả về True nếu tìm thấy end, False nếu mắc kẹt hoặc thoát
     """
+    ClearOldPath(grid)
     message = ""
     came_from = {}
     current = start

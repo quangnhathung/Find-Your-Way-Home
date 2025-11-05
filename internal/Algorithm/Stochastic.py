@@ -2,7 +2,7 @@ import pygame
 import random
 from config.utils import *
 
-def Stochastic(draw, grid, start, end, delay=75):
+def Stochastic(draw, grid, start, end, delay=DELAY):
     """
     Stochastic Hill Climbing:
     - Thu thập tất cả neighbor có h < current_h (tức là tốt hơn).
@@ -10,6 +10,7 @@ def Stochastic(draw, grid, start, end, delay=75):
     - Chọn ngẫu nhiên 1 neighbor theo phân phối trọng số (weights).
     - Nếu không có neighbor tốt hơn -> mắc kẹt (return False).
     """
+    ClearOldPath(grid)
     message = ""
     came_from = {}
     current = start

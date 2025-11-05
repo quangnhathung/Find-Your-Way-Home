@@ -1,20 +1,6 @@
 from model.model import Node
 from config.constans import *
 import pygame
-#heuristic
-def h(p1, p2):
-    # Manhattan distance
-    x1, y1 = p1
-    x2, y2 = p2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-
-def reconstruct_path(came_from, current, draw):
-    while current in came_from:
-        current = came_from[current]
-        if not current.is_start():
-            current.make_path()
-        draw()
 
 # Hàm tiện ích
 def h(p1, p2):
@@ -134,5 +120,5 @@ def ClearOldPath(grid):
     # Xóa các ô cũ (path hoặc flag) trước khi chạy lại
     for row in grid:
         for node in row:
-            if node.is_path() or node.is_flag():
+            if node.is_path() or node.is_flag() or node.is_open():
                 node.reset()

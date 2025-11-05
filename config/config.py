@@ -32,3 +32,5 @@ class Config:
         self.ROW = get_env_int("MATRIX", 15)
         self.BG_COLOR = get_env_str("BG_COLOR", "#FFFFFF")
         self.DENSITY = get_env_float("DENSITY", 0.5)
+        self.MAX_RESTART = get_env_int("MAX_RESTART", 3)
+        self.DELAY = get_env_int("DELAY", 50)
