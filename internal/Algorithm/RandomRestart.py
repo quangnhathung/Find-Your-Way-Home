@@ -5,12 +5,14 @@ from config.constans import *
 from config.utils import *
 
 
-def RandomRestart(draw, grid, start, end, delay=100, max_restarts=100):
+def RandomRestart(draw, grid, start, end, delay=100, max_restarts=10):
     """
     Random Restart Hill Climbing (đơn giản, không kiểm tra chu kỳ, không vẽ lại đường).
     Khi bị kẹt thì đánh dấu flag và restart từ một ô lân cận không phải tường hoặc flag.
     """
-    came_from = {}
+
+    message=""
+    ClearOldPath(grid)
     current = start
     prev = None
     current_h = h(start.get_pos(), end.get_pos())
@@ -27,11 +29,11 @@ def RandomRestart(draw, grid, start, end, delay=100, max_restarts=100):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return False, current_h, current
+                return False, current_h, current, message
 
         if current == end:
             end.make_end()
-            return True, current_h, current
+            return True, current_h, current, message
 
         x, y = current.get_pos()
 
@@ -65,8 +67,8 @@ def RandomRestart(draw, grid, start, end, delay=100, max_restarts=100):
                         nearby_nodes.append(node)
 
             if not nearby_nodes:
-                print(f"No available restart neighbors around ({x},{y}).")
-                return False, current_h, current
+                message = f"khong co node nao tot hon ({x},{y}). h = {current_h}"
+                return False, current_h, current, message
 
             new_start = random.choice(nearby_nodes)
             current = new_start
@@ -97,5 +99,5 @@ def RandomRestart(draw, grid, start, end, delay=100, max_restarts=100):
         draw()
         pygame.time.wait(delay)
 
-    print("Exceeded max restarts.")
-    return False, current_h, current
+    message = "Vuot qua so lan khoi tao lai!"
+    return False, current_h, current, message

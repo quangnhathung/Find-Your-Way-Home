@@ -126,3 +126,13 @@ def draw_button(win, rect, text, color):
     text_surf = FONT.render(text, True, BLACK)
     text_rect = text_surf.get_rect(center=rect.center)
     win.blit(text_surf, text_rect)
+
+
+#xóa path / flag
+
+def ClearOldPath(grid):
+    # Xóa các ô cũ (path hoặc flag) trước khi chạy lại
+    for row in grid:
+        for node in row:
+            if node.is_path() or node.is_flag():
+                node.reset()

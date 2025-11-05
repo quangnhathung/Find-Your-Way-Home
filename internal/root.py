@@ -175,17 +175,18 @@ def root(win=WIN, width=WIDTH):
                             current_heuristic = 0;
 
                             if algo_name == "Stochastic":
-                                found, current_heuristic, current_node = Stochastic(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Stochastic(algo_draw, grid, start, end)
                             elif algo_name == "Random Restart":
-                                found, current_heuristic, current_node = RandomRestart(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = RandomRestart(algo_draw, grid, start, end)
                             elif algo_name == "Simple":
-                                found, current_heuristic, current_node = Simple(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Simple(algo_draw, grid, start, end)
                             elif algo_name == "Steepest Ascent":
-                                found, current_heuristic, current_node = Steepest_Ascent(algo_draw, grid, start, end)
+                                found, current_heuristic, current_node, message = Steepest_Ascent(algo_draw, grid, start, end)
 
                             if not found:
                                 node_x, node_y =  current_node.get_pos();
-                                message = f"Bi mat ket tai ({node_x +1},{node_y +1}) va heuristic hien tai la {current_heuristic}"
+                                if message=="":
+                                    message = f"Bi mat ket tai ({node_x +1},{node_y +1}) va heuristic hien tai la {current_heuristic}"
                             else:
                                 message = f"Da tim thay nha voi {algo_name}!"
                             started = False

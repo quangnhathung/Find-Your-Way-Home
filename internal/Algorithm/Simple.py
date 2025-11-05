@@ -7,6 +7,7 @@ def Simple(draw, grid, start, end, delay=75):
     - Chọn neighbor đầu tiên có h(neighbor, end) < h(current, end)
     - Trả về True nếu tìm thấy end, False nếu mắc kẹt hoặc thoát
     """
+    message = ""
     came_from = {}
     current = start
     visited = {start}
@@ -18,13 +19,13 @@ def Simple(draw, grid, start, end, delay=75):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return False, current_h, current
+                return False, current_h, current, message
 
         # nếu đã tới đích
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True, current_h, current
+            return True, current_h, current, message
 
         # tìm neighbor đầu tiên tốt hơn (heuristic nhỏ hơn)
         found_better = False
@@ -49,7 +50,7 @@ def Simple(draw, grid, start, end, delay=75):
         if not found_better:
             current.make_closed()
             draw()
-            return False, current_h, current
+            return False, current_h, current, message
 
         # vẽ và chờ 1 khoảng
         draw()

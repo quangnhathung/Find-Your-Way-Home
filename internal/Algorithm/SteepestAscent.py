@@ -3,6 +3,7 @@ import random
 from config.utils import *
 
 def Steepest_Ascent(draw, grid, start, end, delay=75):
+    message = ""
     came_from = {}
     current = start
     path_nodes = {start}
@@ -13,12 +14,12 @@ def Steepest_Ascent(draw, grid, start, end, delay=75):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return False, current_h, current
+                return False, current_h, current, message
 
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True, current_h, current
+            return True, current_h, current, message
 
         # tìm neighbor có heuristic nhỏ nhất
         best_neighbors = []
@@ -37,7 +38,7 @@ def Steepest_Ascent(draw, grid, start, end, delay=75):
         if not best_neighbors:
             current.make_closed()
             draw()
-            return False, current_h, current
+            return False, current_h, current, message
 
         # 🔀 chọn ngẫu nhiên 1 neighbor trong các ứng viên tốt nhất
         best_neighbor = random.choice(best_neighbors)

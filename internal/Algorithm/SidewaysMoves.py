@@ -16,7 +16,7 @@ def Sideways(draw, grid, start, end, delay=75 ):
     current = start
     path_nodes = {start}
     current_h = h(start.get_pos(), end.get_pos())
-    max_sideways_moves=conf.SidewaysMoves
+    max_sideways_moves= conf.SidewaysMoves
     sideways_moves = 0
 
     print(f"Hill Climbing with Sideways Moves (max {max_sideways_moves})...")
@@ -61,7 +61,7 @@ def Sideways(draw, grid, start, end, delay=75 ):
         if min_h == current_h:
             sideways_moves += 1
             if sideways_moves > max_sideways_moves:
-                print("❌ Hết giới hạn sideways moves — mắc kẹt.")
+                print("Hết giới hạn sideways moves — mắc kẹt.")
                 current.make_closed()
                 draw()
                 return False, current_h, current

@@ -10,6 +10,7 @@ def Stochastic(draw, grid, start, end, delay=75):
     - Chọn ngẫu nhiên 1 neighbor theo phân phối trọng số (weights).
     - Nếu không có neighbor tốt hơn -> mắc kẹt (return False).
     """
+    message = ""
     came_from = {}
     current = start
     path_nodes = {start}
@@ -20,12 +21,12 @@ def Stochastic(draw, grid, start, end, delay=75):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return False, current_h, current
+                return False, current_h, current, message
 
         if current == end:
             reconstruct_path(came_from, end, draw)
             end.make_end()
-            return True, current_h, current
+            return True, current_h, current, message
 
         # thu thập các neighbor tốt hơn và trọng số cải thiện
         candidates = [] 
@@ -45,7 +46,7 @@ def Stochastic(draw, grid, start, end, delay=75):
         if not candidates:
             current.make_closed()
             draw()
-            return False, current_h, current
+            return False, current_h, current, message
 
         # chọn ngẫu nhiên theo trọng số (nếu weights là [w1,w2,...])
         try:
