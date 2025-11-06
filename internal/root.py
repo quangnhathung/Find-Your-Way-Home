@@ -182,7 +182,6 @@ def root(win=WIN, width=WIDTH):
             return
 
         pygame.display.set_caption("Running experiments... (please wait)")
-        message = "Running experiments... hang on."
         redraw_all()
 
         # dùng density hiện tại (từ input)
@@ -255,7 +254,6 @@ def root(win=WIN, width=WIDTH):
             time.sleep(0.02)
 
         pygame.display.set_caption("Experiments finished")
-        message = "Experiments finished."
         redraw_all()
 
         # tính phần trăm
@@ -287,7 +285,6 @@ def root(win=WIN, width=WIDTH):
                 return
 
             if started:
-                # nếu đang chạy thuật toán/experiment thì bỏ qua input bình thường
                 continue
 
             # --- xử lý click input + apply ---
@@ -338,11 +335,9 @@ def root(win=WIN, width=WIDTH):
                     delay = v2
                     density = v3
 
-                    # nếu matrix(rows) thay đổi -> tái tạo grid
                     if v4 != ROWS:
                         ROWS = v4
                         grid = make_grid(ROWS, width)
-                        # cố restore start/end nếu vị trí hợp lệ, else clear
                         if start:
                             if start.row < ROWS and start.col < ROWS:
                                 start = grid[start.row][start.col]
@@ -356,7 +351,7 @@ def root(win=WIN, width=WIDTH):
                             else:
                                 end = None
 
-                    message = f"Applied: max_restart={max_restart}, delay={delay}, density={density}, rows={ROWS}"
+                    message = f"Applied: max_restart={max_restart}, delay={delay}, density={density}, nodes={ROWS*ROWS}"
                     active_input = None
                     update_grid_surf()
                     redraw_all()
@@ -406,7 +401,6 @@ def root(win=WIN, width=WIDTH):
                                         if random.random() < density:
                                             node.make_wall()
                                 if start:
-                                    # clamp start pos
                                     if start.row < ROWS and start.col < ROWS:
                                         start = grid[start.row][start.col]
                                         start.make_start()
@@ -418,13 +412,12 @@ def root(win=WIN, width=WIDTH):
                                         end.make_end()
                                     else:
                                         end = None
-                                message = "Đã tạo random map."
+                                message = "Random map."
                                 update_grid_surf()
                                 redraw_all()
                                 break
 
                             if algo_name == "Run Experiments":
-                                # chạy tự động tất cả thuật toán 72 lần
                                 started = True
                                 redraw_all()
                                 try:
@@ -465,7 +458,7 @@ def root(win=WIN, width=WIDTH):
                             if not found:
                                 node_x, node_y = current_node.get_pos()
                                 if message == "":
-                                    message = f"Bi mắc kẹt tại ({node_x + 1},{node_y + 1}) và heuristic hiện tại là {current_heuristic}"
+                                    message = f"Bi mac ket tai ({node_x + 1},{node_y + 1}), heuristic hien tai la {current_heuristic}"
                             else:
                                 message = f"Đã tìm thấy nha với {algo_name}!"
                             started = False
@@ -491,7 +484,7 @@ def root(win=WIN, width=WIDTH):
                     start = None
                     end = None
                     grid = make_grid(ROWS, width)
-                    message = "Đã reset bản đồ."
+                    message = "Da reset ban do."
 
         update_grid_surf()
         redraw_all()

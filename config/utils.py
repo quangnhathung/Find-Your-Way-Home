@@ -115,10 +115,8 @@ def draw_button(win, rect, text, color):
 
 
 #xóa path / flag
-
 def ClearOldPath(grid):
-    # Xóa các ô cũ (path hoặc flag) trước khi chạy lại
     for row in grid:
         for node in row:
-            if node.is_path() or node.is_flag() or node.is_open() or node.is_end():
+            if node.is_path() or node.is_flag() or node.is_open() or node.is_closed():
                 node.reset()
