@@ -22,6 +22,8 @@ def root(win=WIN, width=WIDTH):
     max_restart = MAX_RESTART
 
     ROWS = conf.ROW
+    density = getattr(conf, "DENSITY", 0.3)
+
     grid = make_grid(ROWS, width)
     start = None
     end = None
@@ -58,8 +60,10 @@ def root(win=WIN, width=WIDTH):
     # --- Input fields trên panel phải ---
     controls_x = width + 25
     controls_y = TOP_UI_HEIGHT + 20
-    input_labels = ["Max restart:", "Delay:" ]
-    input_texts = ["", ""]
+    # thêm Density và Matrix (rows)
+    input_labels = ["Max restart:", "Delay:", "Density:", "Matrix:"]
+    # khởi tạo hiển thị mặc định bằng giá trị hiện tại để người dùng biết
+    input_texts = [str(MAX_RESTART), str(DELAY), str(density), str(ROWS)]
     input_width = 200
     input_height = 30
     input_gap = 12
@@ -149,7 +153,7 @@ def root(win=WIN, width=WIDTH):
         Chạy nhiều lần (runs_per_algo) cho mỗi thuật toán.
         Trả về dict successes: {algo_name: success_count}
         """
-        nonlocal message, started, max_restart, delay
+        nonlocal message, started, max_restart, delay, ROWS, density
 
         # lưu vị trí start/end hiện tại (nếu người dùng đã đặt trên UI)
         orig_start_pos = (start.row, start.col) if start else None
@@ -178,17 +182,15 @@ def root(win=WIN, width=WIDTH):
             return
 
         pygame.display.set_caption("Running experiments... (please wait)")
-        message = "Running experiments... hang on."
         redraw_all()
 
-        density = getattr(conf, "DENSITY", 0.3)
-
+        # dùng density hiện tại (từ input)
         for name, func in algos:
             for i in range(runs_per_algo):
                 # tạo grid mới cho mỗi lần chạy
                 trial_grid = make_grid(ROWS, width)
 
-                # random walls
+                # random walls theo density hiện tại
                 for r in trial_grid:
                     for node in r:
                         if random.random() < density:
@@ -211,6 +213,9 @@ def root(win=WIN, width=WIDTH):
 
                 if orig_start_pos:
                     s_row, s_col = orig_start_pos
+                    # nếu vị trí vượt quá ROWS mới, cố clamp
+                    s_row = min(s_row, ROWS - 1)
+                    s_col = min(s_col, ROWS - 1)
                     s_node = trial_grid[s_row][s_col]
                 else:
                     s_node = pick_free_node()
@@ -218,6 +223,8 @@ def root(win=WIN, width=WIDTH):
 
                 if orig_end_pos:
                     e_row, e_col = orig_end_pos
+                    e_row = min(e_row, ROWS - 1)
+                    e_col = min(e_col, ROWS - 1)
                     e_node = trial_grid[e_row][e_col]
                 else:
                     e_node = pick_free_node()
@@ -295,20 +302,63 @@ def root(win=WIN, width=WIDTH):
                     continue
 
                 if apply_rect.collidepoint(pos):
+                    # parse và apply 4 inputs: max_restart, delay, density, rows
                     try:
                         v1 = int(input_texts[0].strip())
-                    except ValueError:
-                        v1 = MAX_RESTART  # fallback về constant
+                    except Exception:
+                        v1 = max_restart  # fallback về current
 
                     try:
                         v2 = int(input_texts[1].strip())
-                    except ValueError:
-                        v2 = DELAY  # fallback về constant
+                    except Exception:
+                        v2 = delay  # fallback về current
 
+                    try:
+                        v3 = float(input_texts[2].strip())
+                        # clamp density vào [0,1]
+                        if v3 < 0:
+                            v3 = 0.0
+                        if v3 > 1:
+                            v3 = 1.0
+                    except Exception:
+                        v3 = density  # fallback về current
+
+                    try:
+                        v4 = int(input_texts[3].strip())
+                        if v4 < 2:
+                            v4 = 2
+                        if v4 > 200:
+                            v4 = 200
+                    except Exception:
+                        v4 = ROWS  # fallback
+
+                    # apply giá trị
                     max_restart = v1
                     delay = v2
-                    message = f"Applied: max_restart={max_restart}, delay={delay}"
+                    density = v3
+
+                    # nếu matrix(rows) thay đổi -> tái tạo grid
+                    if v4 != ROWS:
+                        ROWS = v4
+                        grid = make_grid(ROWS, width)
+                        # cố restore start/end nếu vị trí hợp lệ, else clear
+                        if start:
+                            if start.row < ROWS and start.col < ROWS:
+                                start = grid[start.row][start.col]
+                                start.make_start()
+                            else:
+                                start = None
+                        if end:
+                            if end.row < ROWS and end.col < ROWS:
+                                end = grid[end.row][end.col]
+                                end.make_end()
+                            else:
+                                end = None
+
+                    message = f"Applied: max_restart={max_restart}, delay={delay}, density={density}, rows={ROWS}"
                     active_input = None
+                    update_grid_surf()
+                    redraw_all()
                     continue
 
                 active_input = None
@@ -324,7 +374,7 @@ def root(win=WIN, width=WIDTH):
                         active_input = None
                 else:
                     ch = event.unicode
-                    if ch.isprintable() and len(input_texts[active_input]) < 40:
+                    if ch.isprintable() and len(input_texts[active_input]) < 80:
                         input_texts[active_input] += ch
 
             # xử lý nhấp chuột trái trong lưới và nút thuật toán
@@ -350,18 +400,24 @@ def root(win=WIN, width=WIDTH):
 
                             if algo_name == "Random map":
                                 grid = make_grid(ROWS, width)
-                                density = conf.DENSITY
                                 for r in grid:
                                     for node in r:
                                         if random.random() < density:
                                             node.make_wall()
                                 if start:
-                                    start = grid[start.row][start.col]
-                                    start.make_start()
+                                    # clamp start pos
+                                    if start.row < ROWS and start.col < ROWS:
+                                        start = grid[start.row][start.col]
+                                        start.make_start()
+                                    else:
+                                        start = None
                                 if end:
-                                    end = grid[end.row][end.col]
-                                    end.make_end()
-                                message = "Da tao random map."
+                                    if end.row < ROWS and end.col < ROWS:
+                                        end = grid[end.row][end.col]
+                                        end.make_end()
+                                    else:
+                                        end = None
+                                message = "Đã tạo random map."
                                 update_grid_surf()
                                 redraw_all()
                                 break
@@ -380,7 +436,7 @@ def root(win=WIN, width=WIDTH):
                                 break
 
                             if not start or not end:
-                                message = "Vui long dat start va end truoc khi chay thuat toan."
+                                message = "Vui dat start va end de chay."
                                 redraw_all()
                                 break
 
@@ -408,9 +464,9 @@ def root(win=WIN, width=WIDTH):
                             if not found:
                                 node_x, node_y = current_node.get_pos()
                                 if message == "":
-                                    message = f"Bi mat ket tai ({node_x + 1},{node_y + 1}) va heuristic hien tai la {current_heuristic}"
+                                    message = f"Bi mac ket ({node_x + 1},{node_y + 1}) và heuristic la {current_heuristic}"
                             else:
-                                message = f"Da tim thay nha voi {algo_name}!"
+                                message = f"Tim thay nha nha với {algo_name}!"
                             started = False
                             break
 
@@ -434,7 +490,7 @@ def root(win=WIN, width=WIDTH):
                     start = None
                     end = None
                     grid = make_grid(ROWS, width)
-                    message = "Da reset ban do."
+                    message = "Đã reset bản đồ."
 
         update_grid_surf()
         redraw_all()
