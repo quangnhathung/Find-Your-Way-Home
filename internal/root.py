@@ -61,7 +61,7 @@ def root(win=WIN, width=WIDTH):
     controls_x = width + 25
     controls_y = TOP_UI_HEIGHT + 20
     # thêm Density và Matrix (rows)
-    input_labels = ["Max restart:", "Delay:", "Density:", "Matrix (rows):"]
+    input_labels = ["Max restart:", "Delay:", "Density:", "Matrix:"]
     # khởi tạo hiển thị mặc định bằng giá trị hiện tại để người dùng biết
     input_texts = [str(MAX_RESTART), str(DELAY), str(density), str(ROWS)]
     input_width = 200
