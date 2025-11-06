@@ -61,7 +61,7 @@ def root(win=WIN, width=WIDTH):
     controls_x = width + 25
     controls_y = TOP_UI_HEIGHT + 20
     # thêm Density và Matrix (rows)
-    input_labels = ["Max restart:", "Delay:", "Density:", "Matrix:"]
+    input_labels = ["Max restart:", "Delay:", "Density:", "Matrix (rows):"]
     # khởi tạo hiển thị mặc định bằng giá trị hiện tại để người dùng biết
     input_texts = [str(MAX_RESTART), str(DELAY), str(density), str(ROWS)]
     input_width = 200
@@ -148,7 +148,7 @@ def root(win=WIN, width=WIDTH):
         pygame.display.update()
 
     # --- HÀM CHẠY THỬ NGHIỆM ---
-    def run_experiments(runs_per_algo=72, show_plot=True):
+    def run_experiments(runs_per_algo=100, show_plot=True):
         """
         Chạy nhiều lần (runs_per_algo) cho mỗi thuật toán.
         Trả về dict successes: {algo_name: success_count}
@@ -182,6 +182,7 @@ def root(win=WIN, width=WIDTH):
             return
 
         pygame.display.set_caption("Running experiments... (please wait)")
+        message = "Running experiments... hang on."
         redraw_all()
 
         # dùng density hiện tại (từ input)
@@ -427,7 +428,7 @@ def root(win=WIN, width=WIDTH):
                                 started = True
                                 redraw_all()
                                 try:
-                                    results = run_experiments(runs_per_algo=72, show_plot=True)
+                                    results = run_experiments(runs_per_algo=100, show_plot=True)
                                     #message = "Experiments done: " + ", ".join([f"{k}: {v}/72" for k, v in results.items()])
                                 except Exception as e:
                                     message = f"Error running experiments: {e}"
@@ -436,7 +437,7 @@ def root(win=WIN, width=WIDTH):
                                 break
 
                             if not start or not end:
-                                message = "Vui dat start va end de chay."
+                                message = "Vui lòng đặt start và end trước khi chạy thuật toán."
                                 redraw_all()
                                 break
 
@@ -464,9 +465,9 @@ def root(win=WIN, width=WIDTH):
                             if not found:
                                 node_x, node_y = current_node.get_pos()
                                 if message == "":
-                                    message = f"Bi mac ket ({node_x + 1},{node_y + 1}) và heuristic la {current_heuristic}"
+                                    message = f"Bi mắc kẹt tại ({node_x + 1},{node_y + 1}) và heuristic hiện tại là {current_heuristic}"
                             else:
-                                message = f"Tim thay nha nha với {algo_name}!"
+                                message = f"Đã tìm thấy nha với {algo_name}!"
                             started = False
                             break
 

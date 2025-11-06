@@ -120,5 +120,5 @@ def ClearOldPath(grid):
     # Xóa các ô cũ (path hoặc flag) trước khi chạy lại
     for row in grid:
         for node in row:
-            if node.is_path() or node.is_flag() or node.is_open():
+            if node.is_path() or node.is_flag() or node.is_open() or node.is_end():
                 node.reset()
