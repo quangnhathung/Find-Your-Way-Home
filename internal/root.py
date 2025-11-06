@@ -11,6 +11,10 @@ from model.model import Node
 from config.constans import *
 from config.layout import *
 
+# thêm import cho plotting & delay nhẹ
+import matplotlib.pyplot as plt
+import time
+
 
 def root(win=WIN, width=WIDTH):
 
@@ -27,7 +31,8 @@ def root(win=WIN, width=WIDTH):
 
     grid_surf = pygame.Surface((width, width))
 
-    button_texts = ["Simple", "Steepest Ascent", "Stochastic", "Random Restart", "Random map"]
+    # thêm "Run Experiments" vào danh sách nút
+    button_texts = ["Simple", "Steepest Ascent", "Stochastic", "Random Restart", "Random map", "Run Experiments"]
     button_count = len(button_texts)
 
     margin = 20
@@ -53,7 +58,7 @@ def root(win=WIN, width=WIDTH):
     # --- Input fields trên panel phải ---
     controls_x = width + 25
     controls_y = TOP_UI_HEIGHT + 20
-    input_labels = ["Max restart:", "Delay:"]
+    input_labels = ["Max restart:", "Delay:" ]
     input_texts = ["", ""]
     input_width = 200
     input_height = 30
@@ -138,6 +143,131 @@ def root(win=WIN, width=WIDTH):
         win.blit(grid_surf, (0, TOP_UI_HEIGHT))
         pygame.display.update()
 
+    # --- HÀM CHẠY THỬ NGHIỆM ---
+    def run_experiments(runs_per_algo=72, show_plot=True):
+        """
+        Chạy nhiều lần (runs_per_algo) cho mỗi thuật toán.
+        Trả về dict successes: {algo_name: success_count}
+        """
+        nonlocal message, started, max_restart, delay
+
+        # lưu vị trí start/end hiện tại (nếu người dùng đã đặt trên UI)
+        orig_start_pos = (start.row, start.col) if start else None
+        orig_end_pos = (end.row, end.col) if end else None
+
+        algos = [
+            ("Simple", Simple),
+            ("Steepest Ascent", Steepest_Ascent),
+            ("Stochastic", Stochastic),
+            ("Random Restart", RandomRestart),
+        ]
+
+        successes = {name: 0 for name, _ in algos}
+
+        # helper: kiểm tra node có phải wall không (tương thích nhiều implement)
+        def node_is_wall(n):
+            try:
+                # nếu class có method is_wall()
+                return n.is_wall()
+            except Exception:
+                # fallback: kiểm tra thuộc tính phổ biến
+                return bool(getattr(n, "is_wall", False) or getattr(n, "wall", False) or getattr(n, "isWall", False))
+
+        # vẽ im lặng (không update pygame) để truyền vào thuật toán
+        def silent_draw():
+            return
+
+        pygame.display.set_caption("Running experiments... (please wait)")
+        message = "Running experiments... hang on."
+        redraw_all()
+
+        density = getattr(conf, "DENSITY", 0.3)
+
+        for name, func in algos:
+            for i in range(runs_per_algo):
+                # tạo grid mới cho mỗi lần chạy
+                trial_grid = make_grid(ROWS, width)
+
+                # random walls
+                for r in trial_grid:
+                    for node in r:
+                        if random.random() < density:
+                            node.make_wall()
+
+                # chọn start / end
+                def pick_free_node():
+                    # random chọn ô không phải wall
+                    attempts = 0
+                    while True:
+                        rr = random.randrange(ROWS)
+                        cc = random.randrange(ROWS)
+                        n = trial_grid[rr][cc]
+                        if not node_is_wall(n):
+                            return n
+                        attempts += 1
+                        if attempts > ROWS * ROWS * 2:
+                            # fallback: trả node bất kỳ nếu mọi ô đều là wall (hiếm)
+                            return n
+
+                if orig_start_pos:
+                    s_row, s_col = orig_start_pos
+                    s_node = trial_grid[s_row][s_col]
+                else:
+                    s_node = pick_free_node()
+                s_node.make_start()
+
+                if orig_end_pos:
+                    e_row, e_col = orig_end_pos
+                    e_node = trial_grid[e_row][e_col]
+                else:
+                    e_node = pick_free_node()
+                    while e_node == s_node:
+                        e_node = pick_free_node()
+                e_node.make_end()
+
+                # cập nhật neighbors
+                for r in trial_grid:
+                    for node in r:
+                        node.update_neighbors(trial_grid)
+
+                # gọi thuật toán (delay=0 cho nhanh)
+                try:
+                    if name == "Random Restart":
+                        found, _, _, _ = func(silent_draw, trial_grid, s_node, e_node, delay=0, max_restarts=max_restart)
+                    else:
+                        found, _, _, _ = func(silent_draw, trial_grid, s_node, e_node, delay=0)
+                except Exception as exc:
+                    found = False
+                    print(f"[Experiment error] {name} run {i}: {exc}")
+
+                if found:
+                    successes[name] += 1
+
+            # nhẹ pause để hệ thống ổn định
+            time.sleep(0.02)
+
+        pygame.display.set_caption("Experiments finished")
+        message = "Experiments finished."
+        redraw_all()
+
+        # tính phần trăm
+        names = [n for n, _ in algos]
+        counts = [successes[n] for n in names]
+        pcts = [c * 100.0 / runs_per_algo for c in counts]
+
+        if show_plot:
+            plt.figure(figsize=(8, 5))
+            bars = plt.bar(names, pcts)
+            plt.ylim(0, 100)
+            plt.ylabel("Success rate (%)")
+            plt.title(f"Success rate — {runs_per_algo} runs per algorithm")
+            for i, v in enumerate(pcts):
+                plt.text(i, v + 1.5, f"{counts[i]}/{runs_per_algo}\n{v:.1f}%", ha="center", fontsize=9)
+            plt.tight_layout()
+            plt.show()
+
+        return successes
+
     update_grid_surf()
     redraw_all()
 
@@ -149,6 +279,7 @@ def root(win=WIN, width=WIDTH):
                 return
 
             if started:
+                # nếu đang chạy thuật toán/experiment thì bỏ qua input bình thường
                 continue
 
             # --- xử lý click input + apply ---
@@ -232,6 +363,19 @@ def root(win=WIN, width=WIDTH):
                                     end.make_end()
                                 message = "Da tao random map."
                                 update_grid_surf()
+                                redraw_all()
+                                break
+
+                            if algo_name == "Run Experiments":
+                                # chạy tự động tất cả thuật toán 72 lần
+                                started = True
+                                redraw_all()
+                                try:
+                                    results = run_experiments(runs_per_algo=72, show_plot=True)
+                                    #message = "Experiments done: " + ", ".join([f"{k}: {v}/72" for k, v in results.items()])
+                                except Exception as e:
+                                    message = f"Error running experiments: {e}"
+                                started = False
                                 redraw_all()
                                 break
 
