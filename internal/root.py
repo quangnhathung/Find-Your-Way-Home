@@ -430,7 +430,7 @@ def root(win=WIN, width=WIDTH):
                                 break
 
                             if not start or not end:
-                                message = "Vui lòng đặt start và end trước khi chạy thuật toán."
+                                message = "Vui long dat start va end truoc khi chay!"
                                 redraw_all()
                                 break
 
@@ -460,7 +460,7 @@ def root(win=WIN, width=WIDTH):
                                 if message == "":
                                     message = f"Bi mac ket tai ({node_x + 1},{node_y + 1}), heuristic hien tai la {current_heuristic}"
                             else:
-                                message = f"Đã tìm thấy nha với {algo_name}!"
+                                message = f"Da tim thay nha bang thuat toan {algo_name}!"
                             started = False
                             break
 
